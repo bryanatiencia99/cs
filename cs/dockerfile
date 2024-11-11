@@ -1,0 +1,22 @@
+# Usa la imagen de .NET SDK para compilar y ejecutar aplicaciones en C#
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+
+# Copia el archivo de código en el contenedor
+COPY HelloWorld.cs /app/HelloWorld.cs
+
+# Establece el directorio de trabajo
+WORKDIR /app
+
+# Compila el programa
+RUN dotnet new console -o /app -n HelloWorld
+RUN mv HelloWorld.cs HelloWorld/Program.cs
+WORKDIR /app/HelloWorld
+RUN dotnet build
+
+# Cambia a una imagen más ligera de .NET Runtime para ejecutar la aplicación
+FROM mcr.microsoft.com/dotnet/runtime:6.0
+WORKDIR /app
+COPY --from=build /app/HelloWorld/bin/Debug/net6.0/ .
+
+# Ejecuta el programa
+CMD ["dotnet", "HelloWorld.dll"]
